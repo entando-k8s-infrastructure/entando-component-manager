@@ -33,6 +33,7 @@ import org.entando.kubernetes.assertionhelper.AnalysisReportAssertionHelper;
 import org.entando.kubernetes.client.k8ssvc.DefaultK8SServiceClient;
 import org.entando.kubernetes.client.model.AnalysisReport;
 import org.entando.kubernetes.controller.digitalexchange.job.model.Status;
+import org.entando.kubernetes.exception.EntandoComponentManagerException;
 import org.entando.kubernetes.model.bundle.reportable.Reportable;
 import org.entando.kubernetes.model.debundle.EntandoDeBundle;
 import org.entando.kubernetes.model.link.EntandoAppPluginLink;
@@ -58,9 +59,7 @@ import org.springframework.web.client.RestTemplate;
 @Tag("unit")
 public class K8SServiceClientTest {
 
-    private static final String CLIENT_ID = "test-entando-de";
-    private static final String CLIENT_SECRET = "0fdb9047-e121-4aa4-837d-8d51c1822b8a";
-    private static final String TOKEN_URI = "http://someurl.com";
+    private static final String SERVICE_ACCOUNT_TOKEN_FILEPATH = "src/test/resources/token";
     private static EntandoK8SServiceMockServer mockServer;
     private DefaultK8SServiceClient client;
 
@@ -81,7 +80,7 @@ public class K8SServiceClientTest {
     @BeforeEach
     public void setup() {
         mockServer = new EntandoK8SServiceMockServer();
-        client = new DefaultK8SServiceClient(mockServer.getApiRoot(), CLIENT_ID, CLIENT_SECRET, TOKEN_URI);
+        client = new DefaultK8SServiceClient(mockServer.getApiRoot(), SERVICE_ACCOUNT_TOKEN_FILEPATH);
         client.setRestTemplate(noOAuthRestTemplate());
         client.setNoAuthRestTemplate(noOAuthRestTemplate());
     }
@@ -89,6 +88,13 @@ public class K8SServiceClientTest {
     @AfterEach
     public void reset() {
         mockServer.tearDown();
+    }
+
+    @Test
+    void shouldThrowExceptionIfServiceAccountTokenDoesNotExist() {
+
+        Assertions.assertThrows(EntandoComponentManagerException.class, () ->
+                new DefaultK8SServiceClient(mockServer.getApiRoot(), "not_existing"));
     }
 
     @Test

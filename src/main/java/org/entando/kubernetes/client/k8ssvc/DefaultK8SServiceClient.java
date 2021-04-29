@@ -6,6 +6,8 @@ import io.fabric8.kubernetes.api.model.extensions.Ingress;
 import io.fabric8.kubernetes.api.model.extensions.IngressRule;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,9 +47,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;
-import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsAccessTokenProvider;
 import org.springframework.security.oauth2.client.token.grant.client.ClientCredentialsResourceDetails;
-import org.springframework.security.oauth2.common.AuthenticationScheme;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -62,18 +62,14 @@ public class DefaultK8SServiceClient implements K8SServiceClient {
     public static final String APP_PLUGIN_LINKS_ENDPOINT = "app-plugin-links";
     private static final Logger LOGGER = Logger.getLogger(DefaultK8SServiceClient.class.getName());
     private final String k8sServiceUrl;
-    private final String clientId;
-    private final String clientSecret;
-    private final String tokenUri;
+    private Path tokenFilePath;
     private RestTemplate restTemplate;
     private RestTemplate noAuthRestTemplate;
     private Traverson traverson;
 
-    public DefaultK8SServiceClient(String k8sServiceUrl, String clientId, String clientSecret, String tokenUri) {
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.tokenUri = tokenUri;
+    public DefaultK8SServiceClient(String k8sServiceUrl, String tokenFilePath) {
         this.k8sServiceUrl = k8sServiceUrl;
+        this.tokenFilePath = Paths.get(tokenFilePath);
         this.restTemplate = newRestTemplate();
         this.traverson = newTraverson();
         this.noAuthRestTemplate = newNoAuthRestTemplate();
@@ -362,14 +358,10 @@ public class DefaultK8SServiceClient implements K8SServiceClient {
 
 
     private RestTemplate newRestTemplate() {
-        OAuth2ProtectedResourceDetails resourceDetails = getResourceDetails();
-        if (resourceDetails == null) {
-            return null;
-        }
-        final OAuth2RestTemplate template = new OAuth2RestTemplate(resourceDetails);
-        template.setRequestFactory(getRequestFactory());
-        template.setAccessTokenProvider(new ClientCredentialsAccessTokenProvider());
 
+        final OAuth2RestTemplate template = new OAuth2RestTemplate(new ClientCredentialsResourceDetails());
+        template.setRequestFactory(getRequestFactory());
+        template.setAccessTokenProvider(new FromFileTokenProvider(this.tokenFilePath));
         return setMessageConverters(template);
     }
 
@@ -377,7 +369,6 @@ public class DefaultK8SServiceClient implements K8SServiceClient {
 
         final RestTemplate template = new RestTemplate();
         template.setRequestFactory(getRequestFactory());
-
         return setMessageConverters(template);
     }
 
@@ -407,21 +398,6 @@ public class DefaultK8SServiceClient implements K8SServiceClient {
         return converter;
     }
 
-
-    private OAuth2ProtectedResourceDetails getResourceDetails() {
-        final ClientCredentialsResourceDetails resourceDetails = new ClientCredentialsResourceDetails();
-        resourceDetails.setAuthenticationScheme(AuthenticationScheme.header);
-        resourceDetails.setClientId(clientId);
-        resourceDetails.setClientSecret(clientSecret);
-        resourceDetails.setClientAuthenticationScheme(AuthenticationScheme.form);
-        try {
-            resourceDetails.setAccessTokenUri(UriComponentsBuilder.fromUriString(tokenUri).toUriString());
-        } catch (IllegalArgumentException ex) {
-            LOGGER.log(Level.SEVERE, ex, () -> String.format("Issues when using %s as token uri", tokenUri));
-            return null;
-        }
-        return resourceDetails;
-    }
 
     private ClientHttpRequestFactory getRequestFactory() {
         final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
