@@ -33,14 +33,15 @@ class FromFileTokenProviderTest {
 
     @Test
     void shouldObtainTheTokenReadFromTheReceivedPath() {
-        OAuth2AccessToken oAuth2AccessToken = fromFileTokenProvider.obtainAccessToken(null, null);
-        assertThat(oAuth2AccessToken.getValue()).isEqualTo(tokenValue);
+        OAuth2AccessToken oauth2AccessToken = fromFileTokenProvider.obtainAccessToken(null, null);
+        assertThat(oauth2AccessToken.getValue()).isEqualTo(tokenValue);
     }
 
     @Test
     void shouldThrowExceptionIfThereceivedPathDoesNotExist() {
         Path notExistingPath = Paths.get("not_existing");
-        Assertions.assertThrows(EntandoComponentManagerException.class, () -> new FromFileTokenProvider(notExistingPath));
+        Assertions
+                .assertThrows(EntandoComponentManagerException.class, () -> new FromFileTokenProvider(notExistingPath));
     }
 
     @Test
@@ -66,8 +67,8 @@ class FromFileTokenProviderTest {
             when(fromFileTokenProvider.getTokenFileUri()).thenReturn(tempFilePath);
             when(fromFileTokenProvider.refreshAccessToken(any(), any(), any())).thenCallRealMethod();
 
-            OAuth2AccessToken oAuth2AccessToken = fromFileTokenProvider.refreshAccessToken(null, null, null);
-            assertThat(oAuth2AccessToken.getValue()).isEqualTo(token);
+            OAuth2AccessToken oauth2AccessToken = fromFileTokenProvider.refreshAccessToken(null, null, null);
+            assertThat(oauth2AccessToken.getValue()).isEqualTo(token);
         } finally {
             // clean up
             Files.delete(tempFilePath);

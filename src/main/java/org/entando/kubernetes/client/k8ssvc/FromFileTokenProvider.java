@@ -19,37 +19,37 @@ public class FromFileTokenProvider implements AccessTokenProvider {
 
     @Getter
     private final Path tokenFileUri;
-    private OAuth2AccessToken oAuth2AccessToken;
+    private OAuth2AccessToken oauth2AccessToken;
 
     public FromFileTokenProvider(Path tokenFileUri) {
         this.tokenFileUri = tokenFileUri;
-        this.oAuth2AccessToken = this.readOAuth2AccessToken();
+        this.oauth2AccessToken = this.readOAuth2AccessToken();
     }
 
     @Override
-    public OAuth2AccessToken obtainAccessToken(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails,
+    public OAuth2AccessToken obtainAccessToken(OAuth2ProtectedResourceDetails oauth2ProtectedResourceDetails,
             AccessTokenRequest accessTokenRequest)
             throws UserRedirectRequiredException, UserApprovalRequiredException, AccessDeniedException {
 
-        return this.oAuth2AccessToken;
+        return this.oauth2AccessToken;
     }
 
     @Override
-    public boolean supportsResource(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails) {
+    public boolean supportsResource(OAuth2ProtectedResourceDetails oauth2ProtectedResourceDetails) {
         return true;
     }
 
     @Override
-    public OAuth2AccessToken refreshAccessToken(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails,
-            OAuth2RefreshToken oAuth2RefreshToken, AccessTokenRequest accessTokenRequest)
+    public OAuth2AccessToken refreshAccessToken(OAuth2ProtectedResourceDetails oauth2ProtectedResourceDetails,
+            OAuth2RefreshToken oauth2RefreshToken, AccessTokenRequest accessTokenRequest)
             throws UserRedirectRequiredException {
 
-        this.oAuth2AccessToken = this.readOAuth2AccessToken();
-        return this.oAuth2AccessToken;
+        this.oauth2AccessToken = this.readOAuth2AccessToken();
+        return this.oauth2AccessToken;
     }
 
     @Override
-    public boolean supportsRefresh(OAuth2ProtectedResourceDetails oAuth2ProtectedResourceDetails) {
+    public boolean supportsRefresh(OAuth2ProtectedResourceDetails oauth2ProtectedResourceDetails) {
         return true;
     }
 

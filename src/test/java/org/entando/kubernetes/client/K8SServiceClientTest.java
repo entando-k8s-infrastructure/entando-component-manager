@@ -59,7 +59,7 @@ import org.springframework.web.client.RestTemplate;
 @Tag("unit")
 public class K8SServiceClientTest {
 
-    private static final String SERVICE_ACCOUNT_TOKEN_FILEPATH = "src/test/resources/token";
+    private static final String SERVICE_ACCOUNT_TOKEN_FILEPATH = "src/test/resources/k8s-service-account-token";
     private static EntandoK8SServiceMockServer mockServer;
     private DefaultK8SServiceClient client;
 
@@ -93,8 +93,10 @@ public class K8SServiceClientTest {
     @Test
     void shouldThrowExceptionIfServiceAccountTokenDoesNotExist() {
 
+        String apiRoot = mockServer.getApiRoot();
+
         Assertions.assertThrows(EntandoComponentManagerException.class, () ->
-                new DefaultK8SServiceClient(mockServer.getApiRoot(), "not_existing"));
+                new DefaultK8SServiceClient(apiRoot, "not_existing"));
     }
 
     @Test
