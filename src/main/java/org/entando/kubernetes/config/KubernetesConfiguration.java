@@ -21,14 +21,10 @@ public class KubernetesConfiguration {
 
     @Value("${entando.k8s.service.url}")
     private String k8sServiceUrl;
-    @Value("${spring.security.oauth2.client.registration.oidc.client-id}")
-    private String clientId;
-    @Value("${spring.security.oauth2.client.registration.oidc.client-secret}")
-    private String clientSecret;
-    @Value("${entando.auth-url}")
-    private String tokenUri;
     @Value("${entando.k8s.plugin-readiness-timeout-in-minutes:5}")
     private long pluginReadinessTimeoutInMinutes;
+    @Value("${entando.k8s.service-account.token-filepath}")
+    private String serviceAccountTokenPath;
 
     @Bean
     public KubernetesClient client() {
@@ -38,7 +34,7 @@ public class KubernetesConfiguration {
 
     @Bean
     public K8SServiceClient k8SServiceClient() {
-        return new DefaultK8SServiceClient(k8sServiceUrl, clientId, clientSecret, tokenUri);
+        return new DefaultK8SServiceClient(k8sServiceUrl, serviceAccountTokenPath);
     }
 
     @Bean

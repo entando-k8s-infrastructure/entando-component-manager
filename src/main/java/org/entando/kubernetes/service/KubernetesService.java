@@ -83,13 +83,7 @@ public class KubernetesService {
 
 
     public EntandoAppPluginLink linkPlugin(EntandoPlugin plugin) {
-        EntandoPlugin newPlugin = new EntandoPluginBuilder()
-                .withMetadata(plugin.getMetadata())
-                .withSpec(plugin.getSpec())
-                .build();
-
-        newPlugin.getMetadata().setNamespace(null);
-
+        EntandoPlugin newPlugin = createNewPlugin(plugin);
         return k8sServiceClient.linkAppWithPlugin(entandoAppName, entandoAppNamespace, newPlugin);
     }
 
@@ -104,14 +98,19 @@ public class KubernetesService {
     }
 
     public EntandoPlugin updatePlugin(EntandoPlugin plugin) {
-        EntandoPlugin updatedPlugin = new EntandoPluginBuilder()
+        EntandoPlugin updatedPlugin = createNewPlugin(plugin);
+        return k8sServiceClient.updatePlugin(updatedPlugin);
+    }
+
+    private EntandoPlugin createNewPlugin(EntandoPlugin plugin) {
+        EntandoPlugin newPlugin = new EntandoPluginBuilder()
                 .withMetadata(plugin.getMetadata())
                 .withSpec(plugin.getSpec())
                 .build();
 
-        updatedPlugin.getMetadata().setNamespace(null);
+        newPlugin.getMetadata().setNamespace(this.entandoAppNamespace);
 
-        return k8sServiceClient.updatePlugin(updatedPlugin);
+        return newPlugin;
     }
 
     public boolean hasLinkingProcessCompletedSuccessfully(EntandoAppPluginLink link, EntandoPlugin plugin) {
